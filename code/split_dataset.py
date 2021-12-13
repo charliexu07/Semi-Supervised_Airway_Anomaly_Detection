@@ -67,7 +67,7 @@ tr_y = torch.from_numpy(tr_y).cuda()
 tr_x, tr_y = upsample(tr_x, tr_y)
 
 ratio = 0.25
-train_x, train_y, valid_x, valid_y = split(tr_x.tolist(), tr_y.tolist(), 0.1)
+train_x, train_y, valid_x, valid_y = split(tr_x.tolist(), tr_y.tolist(), ratio)
 
 print(tr_x.shape)
 print(tr_y.shape)
