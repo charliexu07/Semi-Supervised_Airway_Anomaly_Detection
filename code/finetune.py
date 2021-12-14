@@ -146,11 +146,11 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load(PATH))
     model.eval()
 
-    new_tr_x = []
-    for index in range(tr_x.shape[0]):
-        new_tr_x.append(model(tr_x[index], edge_index))
-
-    new_tr_x = torch.stack(new_tr_x)
+    # new_tr_x = []
+    # for index in range(tr_x.shape[0]):
+    #     new_tr_x.append(model(tr_x[index], edge_index))
+    #
+    # new_tr_x = torch.stack(new_tr_x)
 
     layer_num = [3]
     l2_num = [1e-4]
@@ -188,7 +188,7 @@ if __name__ == '__main__':
                     for epoch in range(500):
                         for index in range(tr_x.shape[0]):
                             optimizer.zero_grad()
-                            data = Data(x=new_tr_x[index], edge_index=edge_index)
+                            data = Data(x=model(tr_x[index], edge_index), edge_index=edge_index)
                             out = model2(data)
                             loss = F.nll_loss(out, tr_y[index].long())
                             loss.backward()
