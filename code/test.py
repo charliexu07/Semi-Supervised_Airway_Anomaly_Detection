@@ -133,33 +133,64 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load(PATH))
     model.eval()
 
-    model2 = Net(128, 2, 3).to(device)
-    PATH = "../model/finetune_model"
-    model2.load_state_dict(torch.load(PATH))
-    model2.eval()
+    with open('../model/result.txt', 'a') as f:
+        f.write("Training using 25% of data for 500 epochs")
+        f.write("\n")
+        f.write("\n")
 
-    start = time.time()
+    iter_num = 3
 
-    ts_pred = []
-    for index2 in range(ts_x.shape[0]):
-        data = Data(x=model(ts_x[index2], edge_index), edge_index=edge_index)
-        pred = model2(data)
-        one_ts_pred = torch.argmax(pred, dim=1)
-        one_ts_pred, _ = torch.max(one_ts_pred, dim=0)
-        ts_pred.append(one_ts_pred.item())
+    total_acc = []
+    total_sensitivity = []
+    total_specificity = []
 
-    ts_pred = torch.tensor(ts_pred).cpu().detach().numpy()
+    for ite in range(iter_num):
+        model2 = Net(128, 2, 3).to(device)
+        PATH = "../model/finetune_model_" + str(ite+1)
+        model2.load_state_dict(torch.load(PATH))
+        model2.eval()
 
-    end = time.time()
+        start = time.time()
 
-    print("Total time: " + str(end - start) + " seconds")
+        ts_pred = []
+        for index2 in range(ts_x.shape[0]):
+            data = Data(x=model(ts_x[index2], edge_index), edge_index=edge_index)
+            pred = model2(data)
+            one_ts_pred = torch.argmax(pred, dim=1)
+            one_ts_pred, _ = torch.max(one_ts_pred, dim=0)
+            ts_pred.append(one_ts_pred.item())
 
-    test_acc = (ts_pred == ts_y).sum(dtype=ts_pred.dtype) / (len(ts_y))
-    print('test acc', test_acc)
+        ts_pred = torch.tensor(ts_pred).cpu().detach().numpy()
 
-    test_recall = (ts_pred[ts_y == 1]).sum(dtype=ts_pred.dtype) / (len(ts_y[ts_y == 1]))
-    print('test recall', test_recall, (ts_pred[ts_y == 1]).sum(dtype=ts_pred.dtype), '/', len(ts_y[ts_y == 1]))
+        end = time.time()
 
-    test_sensitivity = (1 - ts_pred[ts_y == 0]).sum(dtype=ts_pred.dtype) / (len(ts_y[ts_y == 0]))
-    print('test sensitivity', test_sensitivity, (1 - ts_pred[ts_y == 0]).sum(dtype=ts_pred.dtype), '/',
-          (len(ts_y[ts_y == 0])), "\n")
+        iter_msg = 'Iteration ' + str(ite + 1) + ": " + str(end - start) + " seconds"
+
+        test_acc = (ts_pred == ts_y).sum(dtype=ts_pred.dtype) / (len(ts_y))
+        total_acc.append(test_acc)
+        print('test acc', test_acc)
+
+        test_sensitivity = (ts_pred[ts_y == 1]).sum(dtype=ts_pred.dtype) / (len(ts_y[ts_y == 1]))
+        total_sensitivity.append(test_sensitivity)
+        print('test sensitivity', test_sensitivity, (ts_pred[ts_y == 1]).sum(dtype=ts_pred.dtype), '/', len(ts_y[ts_y == 1]))
+
+        test_specificity = (1 - ts_pred[ts_y == 0]).sum(dtype=ts_pred.dtype) / (len(ts_y[ts_y == 0]))
+        total_specificity.append(test_specificity)
+        print('test specificity', test_specificity, (1 - ts_pred[ts_y == 0]).sum(dtype=ts_pred.dtype), '/',
+              (len(ts_y[ts_y == 0])), "\n")
+
+        with open('../model/result.txt', 'a') as f:
+            f.write(iter_msg + "\n")
+            f.write('test acc: ' + str(test_acc) + "\n")
+            f.write('test sensitivity: ' + str(test_sensitivity) + "\n")
+            f.write('test sensitivity: ' + str(test_specificity) + "\n\n")
+
+    print('average test acc', sum(total_acc) / len(total_acc))
+    print('average test sensitivity', sum(total_sensitivity) / len(total_sensitivity))
+    print('average test specificity', sum(total_specificity) / len(total_specificity), "\n")
+
+    with open('../model/result.txt', 'a') as f:
+        f.write("final result:" + "\n")
+        f.write('average test acc: ' + str(sum(total_acc) / len(total_acc)) + "\n")
+        f.write('average test sensitivity: ' + str(sum(total_sensitivity) / len(total_sensitivity)) + "\n")
+        f.write('average test specificity: ' + str(sum(total_specificity) / len(total_specificity)) + "\n\n\n")

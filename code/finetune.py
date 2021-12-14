@@ -146,12 +146,21 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load(PATH))
     model.eval()
 
+    new_tr_x = []
+    for index in range(tr_x.shape[0]):
+        new_tr_x.append(model(tr_x[index], edge_index))
+
+    new_tr_x = torch.stack(new_tr_x)
+
+    print(tr_x.shape)
+    print(new_tr_x.shape)
+
     layer_num = [3]
     l2_num = [1e-4]
     lr_num = [1e-3]
 
     # iter_num = 5
-    iter_num = 3
+    iter_num = 6
     cnt = 0
     val_acc_list = []
 
@@ -159,49 +168,46 @@ if __name__ == '__main__':
 
     # 10% data
 
-    with open('result.txt', 'a') as f:
-        f.write("Training using 10% of data for 500 epochs")
-        f.write("\n")
-        f.write("\n")
-
-    print("Training using 10% of data for 500 epochs")
+    print("Training using 25% of data for 500 epochs")
 
     start = time.time()
 
-    for layers in layer_num:
-        for l2 in l2_num:
-            for lr in lr_num:
-                losses = []
-                print(
-                    'Combo {0}: Train with {1} layers, {2} L2 regularization, and {3} learning rate:'.format(combo,
-                                                                                                             layers,
-                                                                                                             l2, lr),
-                    "\n")
-                start = time.time()
-                model2 = Net(128, 2, layers).to(device)
-                optimizer = torch.optim.Adam(model2.parameters(), lr=lr, weight_decay=l2)
-                model2.train()
+    for ite in range(4, iter_num):
 
-                for epoch in range(500):
-                    for index in range(tr_x.shape[0]):
-                        optimizer.zero_grad()
-                        data = Data(x=model(tr_x[index], edge_index), edge_index=edge_index)
-                        out = model2(data)
-                        loss = F.nll_loss(out, tr_y[index].long())
-                        loss.backward()
-                        losses.append(loss)
-                        optimizer.step()
-                    print("epoch", epoch)
+        for layers in layer_num:
+            for l2 in l2_num:
+                for lr in lr_num:
+                    # losses = []
+                    print(
+                        'Combo {0}: Train with {1} layers, {2} L2 regularization, and {3} learning rate:'.format(combo,
+                                                                                                                 layers,
+                                                                                                                 l2, lr),
+                        "\n")
+                    start = time.time()
+                    model2 = Net(128, 2, layers).to(device)
+                    optimizer = torch.optim.Adam(model2.parameters(), lr=lr, weight_decay=l2)
+                    model2.train()
 
-                end = time.time()
-                print("Total time: " + str(end - start) + " seconds")
+                    for epoch in range(500):
+                        for index in range(tr_x.shape[0]):
+                            optimizer.zero_grad()
+                            data = Data(x=model(tr_x[index], edge_index), edge_index=edge_index)
+                            out = model2(data)
+                            loss = F.nll_loss(out, tr_y[index].long())
+                            loss.backward()
+                            # losses.append(loss)
+                            optimizer.step()
+                        print("epoch", epoch)
 
-                PATH = "../model/finetune_model"
-                torch.save(model2.state_dict(), PATH)
+                    end = time.time()
+                    print("Total time: " + str(end - start) + " seconds")
 
-                np.save("../model/valid_loss.npy", np.array(losses))
+                    PATH = "../model/finetune_model_" + str(ite+1)
+                    torch.save(model2.state_dict(), PATH)
 
-                plt.plot(losses)
-                plt.show()
+                    # np.save("../model/valid_loss.npy", np.array(losses))
 
-                exit(0)
+                    # plt.plot(losses)
+                    # plt.show()
+
+    exit(0)

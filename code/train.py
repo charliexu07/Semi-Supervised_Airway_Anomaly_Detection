@@ -76,7 +76,7 @@ def train(x):
     z2 = model(x_2, edge_index_2)
 
     loss = model.loss(z1, z2)
-    losses.append(loss.item())
+    # losses.append(loss.item())
     loss.backward()
     optimizer.step()
 
@@ -192,7 +192,7 @@ if __name__ == '__main__':
 
     log = args.verbose.split(',')
 
-    losses = []
+    # losses = []
     start = time.time()
 
     # for epoch in range(1, param['num_epochs'] + 1):
@@ -210,9 +210,9 @@ if __name__ == '__main__':
     PATH = "../model/train_model"
     torch.save(model.state_dict(), PATH)
 
-    np.save("../model/train_loss.npy", np.array(losses))
+    # np.save("../model/train_loss.npy", np.array(losses))
 
-    plt.plot(losses)
-    plt.show()
+    # plt.plot(losses)
+    # plt.show()
 
     exit(0)
