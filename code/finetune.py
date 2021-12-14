@@ -152,9 +152,6 @@ if __name__ == '__main__':
 
     new_tr_x = torch.stack(new_tr_x)
 
-    print(tr_x.shape)
-    print(new_tr_x.shape)
-
     layer_num = [3]
     l2_num = [1e-4]
     lr_num = [1e-3]
@@ -191,7 +188,7 @@ if __name__ == '__main__':
                     for epoch in range(500):
                         for index in range(tr_x.shape[0]):
                             optimizer.zero_grad()
-                            data = Data(x=model(tr_x[index], edge_index), edge_index=edge_index)
+                            data = Data(x=new_tr_x[index], edge_index=edge_index)
                             out = model2(data)
                             loss = F.nll_loss(out, tr_y[index].long())
                             loss.backward()

@@ -1,4 +1,5 @@
 model/*
+results/*
 data/train_x.npy
 data/train_y.npy
 data/valid_x.npy
