@@ -183,7 +183,7 @@ if __name__ == '__main__':
             f.write(iter_msg + "\n")
             f.write('test acc: ' + str(test_acc) + "\n")
             f.write('test sensitivity: ' + str(test_sensitivity) + "\n")
-            f.write('test sensitivity: ' + str(test_specificity) + "\n\n")
+            f.write('test specificity: ' + str(test_specificity) + "\n\n")
 
     print('average test acc', sum(total_acc) / len(total_acc))
     print('average test sensitivity', sum(total_sensitivity) / len(total_sensitivity))

@@ -19,40 +19,46 @@ import time
 
 import numpy as np
 
-def input_preprocess(x, xmax=None, xmean=None):
-    # x = x.transpose([0,2,1]).astype(np.float32)
-    x = x.astype(np.float32)
-    if xmax is None:
-        xmax = x.max(axis=0)
-        xmax[xmax == 0] = 1
-    x = x / xmax
-    if xmean is None:
-        xmean = x.mean(axis=0)
-    x = x - xmean
-    return x, xmax, xmean
 
-def upsample(tr_x, tr_y):
-    new_tr_y, _ = torch.max(tr_y, dim=1)
-    upsample_x = []
-    upsample_y = []
+# # process the raw input
+# def input_preprocess(x, xmax=None, xmean=None):
+#     # x = x.transpose([0,2,1]).astype(np.float32)
+#     x = x.astype(np.float32)
+#     if xmax is None:
+#         xmax = x.max(axis=0)
+#         xmax[xmax == 0] = 1
+#     x = x / xmax
+#     if xmean is None:
+#         xmean = x.mean(axis=0)
+#     x = x - xmean
+#     return x, xmax, xmean
 
-    for index in range(new_tr_y.shape[0]):
-        if new_tr_y[index].item() == 0:
-            upsample_x.append(tr_x[index])
-            upsample_y.append(tr_y[index])
 
-    upsample_x = torch.stack(upsample_x * 70)
-    upsample_y = torch.stack(upsample_y * 70)
+# # upsample the minority class
+# def upsample(tr_x, tr_y):
+#     new_tr_y, _ = torch.max(tr_y, dim=1)
+#     upsample_x = []
+#     upsample_y = []
+#
+#     for index in range(new_tr_y.shape[0]):
+#         if new_tr_y[index].item() == 0:
+#             upsample_x.append(tr_x[index])
+#             upsample_y.append(tr_y[index])
+#
+#     upsample_x = torch.stack(upsample_x * 70)
+#     upsample_y = torch.stack(upsample_y * 70)
+#
+#     new_tr_x = torch.cat((tr_x, upsample_x))
+#     new_tr_y = torch.cat((tr_y, upsample_y))
+#
+#     return new_tr_x, new_tr_y
 
-    new_tr_x = torch.cat((tr_x, upsample_x))
-    new_tr_y = torch.cat((tr_y, upsample_y))
-
-    return new_tr_x, new_tr_y
 
 def train(x):
     model.train()
     optimizer.zero_grad()
 
+    # define which edges to drop
     def drop_edge(idx: int):
         global drop_weights
 
@@ -72,11 +78,12 @@ def train(x):
         x_1 = drop_feature_weighted_2(x, feature_weights, param['drop_feature_rate_1'])
         x_2 = drop_feature_weighted_2(x, feature_weights, param['drop_feature_rate_2'])
 
+    # obtain two views
     z1 = model(x_1, edge_index_1)
     z2 = model(x_2, edge_index_2)
 
     loss = model.loss(z1, z2)
-    # losses.append(loss.item())
+
     loss.backward()
     optimizer.step()
 
@@ -86,7 +93,6 @@ def train(x):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', type=str, default='cuda:0')
-    # parser.add_argument('--dataset', type=str, default='WikiCS')
     parser.add_argument('--param', type=str, default='local:default.json')
     parser.add_argument('--seed', type=int, default=39788)
     parser.add_argument('--verbose', type=str, default='train,eval,final')
@@ -134,6 +140,7 @@ if __name__ == '__main__':
 
     device = torch.device(args.device)
 
+    # define edge index
     edge_index = torch.tensor(
         [[18, 18, 18, 18, 18, 19, 19, 19, 20, 20, 21, 21, 21, 21, 21, 22, 22, 22, 22, 23, 23, 23, 23,
           19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
@@ -141,6 +148,7 @@ if __name__ == '__main__':
           18, 18, 18, 19, 19, 19, 20, 20, 21, 21, 21, 21, 21, 22, 22, 22, 22, 23, 23, 23, 23]],
         dtype=torch.long).cuda()
 
+    # open raw data
     x = np.load('../data/train_x.npy').astype(np.float32)
     y = np.load('../data/train_y.npy').astype(int)
 
@@ -195,7 +203,6 @@ if __name__ == '__main__':
     # losses = []
     start = time.time()
 
-    # for epoch in range(1, param['num_epochs'] + 1):
     for epoch in range(1, param['num_epochs']):
         ite = 0
         for img in tr_x:

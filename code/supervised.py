@@ -88,7 +88,7 @@ ts_x = torch.from_numpy(ts_x).cuda()
 ts_y = torch.from_numpy(ts_y).cuda()
 
 tr_x, tr_y = upsample(tr_x, tr_y)
-print(tr_x.shape)
+# print(tr_x.shape)
 
 N, D_in, H, D_out = tr_x.shape[0], x.shape[1], 8, y.max() + 1
 D_out = 2
@@ -97,10 +97,6 @@ D_in = 10
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 ts_y = ts_y.cpu().detach().numpy()
-
-# layer_num = [1, 2, 5]
-# l2_num = [0, 1e-4, 1e-1]
-# lr_num = [1e-5, 1e-2, 9e-1]
 
 layer_num = [3]
 l2_num = [1e-4]
@@ -113,12 +109,7 @@ val_acc_list = []
 
 combo = 1
 
-
-
-
 # 100% data
-
-iter_num = 3
 
 with open('result.txt', 'a') as f:
     f.write("Training using 100% of data for 500 epochs")
@@ -134,7 +125,7 @@ for layers in layer_num:
             val_acc_sum = 0
             val_acc_all = []
             print(
-                'Combo {0}: Train with {1} layers, {2} L2 regularization, and {3} learning rate:'.format(combo, layers,
+                'Train with {1} layers, {2} L2 regularization, and {3} learning rate:'.format(combo, layers,
                                                                                                          l2, lr), "\n")
             total_acc = []
             total_sensitivity = []

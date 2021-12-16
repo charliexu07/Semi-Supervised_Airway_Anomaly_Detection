@@ -16,38 +16,41 @@ import time
 import numpy as np
 
 
-def input_preprocess(x, xmax=None, xmean=None):
-    # x = x.transpose([0,2,1]).astype(np.float32)
-    x = x.astype(np.float32)
-    if xmax is None:
-        xmax = x.max(axis=0)
-        xmax[xmax == 0] = 1
-    x = x / xmax
-    if xmean is None:
-        xmean = x.mean(axis=0)
-    x = x - xmean
-    return x, xmax, xmean
+# # process the raw input
+# def input_preprocess(x, xmax=None, xmean=None):
+#     # x = x.transpose([0,2,1]).astype(np.float32)
+#     x = x.astype(np.float32)
+#     if xmax is None:
+#         xmax = x.max(axis=0)
+#         xmax[xmax == 0] = 1
+#     x = x / xmax
+#     if xmean is None:
+#         xmean = x.mean(axis=0)
+#     x = x - xmean
+#     return x, xmax, xmean
+#
+#
+# # upsample the minority class
+# def upsample(tr_x, tr_y):
+#     new_tr_y, _ = torch.max(tr_y, dim=1)
+#     upsample_x = []
+#     upsample_y = []
+#
+#     for index in range(new_tr_y.shape[0]):
+#         if new_tr_y[index].item() == 0:
+#             upsample_x.append(tr_x[index])
+#             upsample_y.append(tr_y[index])
+#
+#     upsample_x = torch.stack(upsample_x * 70)
+#     upsample_y = torch.stack(upsample_y * 70)
+#
+#     new_tr_x = torch.cat((tr_x, upsample_x))
+#     new_tr_y = torch.cat((tr_y, upsample_y))
+#
+#     return new_tr_x, new_tr_y
 
 
-def upsample(tr_x, tr_y):
-    new_tr_y, _ = torch.max(tr_y, dim=1)
-    upsample_x = []
-    upsample_y = []
-
-    for index in range(new_tr_y.shape[0]):
-        if new_tr_y[index].item() == 0:
-            upsample_x.append(tr_x[index])
-            upsample_y.append(tr_y[index])
-
-    upsample_x = torch.stack(upsample_x * 70)
-    upsample_y = torch.stack(upsample_y * 70)
-
-    new_tr_x = torch.cat((tr_x, upsample_x))
-    new_tr_y = torch.cat((tr_y, upsample_y))
-
-    return new_tr_x, new_tr_y
-
-
+# define GCN model
 class Net(torch.nn.Module):
     def __init__(self, D_in, D_out, conv_number):
         super(Net, self).__init__()
@@ -146,47 +149,39 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load(PATH))
     model.eval()
 
-    # new_tr_x = []
-    # for index in range(tr_x.shape[0]):
-    #     new_tr_x.append(model(tr_x[index], edge_index))
-    #
-    # new_tr_x = torch.stack(new_tr_x)
-
     layer_num = [3]
     l2_num = [1e-4]
     lr_num = [1e-3]
 
     # iter_num = 5
-    iter_num = 6
+    iter_num = 3
     cnt = 0
     val_acc_list = []
 
     combo = 1
 
-    # 10% data
+    # 25% data
 
     print("Training using 25% of data for 500 epochs")
 
     start = time.time()
 
-    for ite in range(4, iter_num):
+    for ite in range(2, iter_num):
 
         for layers in layer_num:
             for l2 in l2_num:
                 for lr in lr_num:
                     # losses = []
                     print(
-                        'Combo {0}: Train with {1} layers, {2} L2 regularization, and {3} learning rate:'.format(combo,
-                                                                                                                 layers,
-                                                                                                                 l2, lr),
-                        "\n")
+                        'Train with {1} layers, {2} L2 regularization, and {3} learning rate:'.format(combo, layers, l2,
+                                                                                                      lr), "\n")
                     start = time.time()
                     model2 = Net(128, 2, layers).to(device)
                     optimizer = torch.optim.Adam(model2.parameters(), lr=lr, weight_decay=l2)
                     model2.train()
 
                     for epoch in range(500):
-                        for index in range(tr_x.shape[0]):
+                        for index in range(0, tr_x.shape[0], 4):
                             optimizer.zero_grad()
                             data = Data(x=model(tr_x[index], edge_index), edge_index=edge_index)
                             out = model2(data)

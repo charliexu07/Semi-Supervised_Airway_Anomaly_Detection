@@ -58,3 +58,8 @@ python test.py
 ```
 
 After train/finetune/test, rename the "model" folder to a specific name and create a new "model" folder for the next round of training
+
+Optional: supervised training
+```
+python supervised.py
+```
