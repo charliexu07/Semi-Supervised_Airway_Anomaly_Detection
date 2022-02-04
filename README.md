@@ -1,6 +1,6 @@
 # Semi-Supervised Airway Anomaly Detection
 
-This repository introduces semi-supervised learning to the method proposed in the paper "Airway Anomaly Detection by Prototype-based Graph Neural Network"
+This repository introduces semi-supervised learning to the method proposed in the paper ["Airway Anomaly Detection by Prototype-based Graph Neural Network"](https://drive.google.com/file/d/18dsJLTJGDQf9x0yMYefQkMaCoMQjTLQE/preview)
 
 [comment]: <> (## Abstract)
 
