@@ -1,6 +1,6 @@
 # Semi-Supervised Airway Anomaly Detection
 
-This repository contains the PyTorch implementation of the paper ["Airway Anomaly Detection by Prototype-based Graph Neural Network"](https://drive.google.com/file/d/18dsJLTJGDQf9x0yMYefQkMaCoMQjTLQE/preview)
+This repository contains the PyTorch implementation of the paper ["Semi-Supervised Graph Contrastive Learning for Airway Anomaly Detection"](https://drive.google.com/file/d/18dsJLTJGDQf9x0yMYefQkMaCoMQjTLQE/preview)
 
 [comment]: <> (## Abstract)
 
